@@ -1,0 +1,56 @@
+body {
+    font-family: "Helvetica", "Arial", sans-serif;
+}
+
+button {
+    background-color: darkslateblue;
+    color: white;
+    border: none;
+}
+
+.main-box {
+    padding-top: 2em;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.title-box {
+    font-size: 18pt;
+    font-weight: bold;
+}
+
+.controls-box {
+    padding-top: 2em;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.control-box {
+    height: 3em;
+}
+
+.control-box button {
+    font-size: 12pt;
+    width: 13em;
+    height: 2em;
+}
+
+.control-box form input {
+    font-size: 12pt;
+    width: 15em;
+    height: 2em;
+    border-color: darkslateblue;
+    visibility: hidden;
+}
+
+.footer {
+    padding-top: 10em;
+    font-size: 8pt;
+    text-align: center;
+}

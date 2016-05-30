@@ -1,0 +1,15 @@
+{
+  "name": "wikipedia",
+  "version": "1.0.0",
+  "description": "FreeCodeCamp Wikipedia viewer exercise",
+  "main": "index.js",
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "next"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "JW",
+  "license": "MIT"
+}
