@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "target": "es6",
+        "target": "es5",
         "module": "commonjs",
         "sourceMap": true,
         "noImplicitAny": true,
@@ -8,6 +8,7 @@
         "strictNullChecks": true
     },
     "files": [
-        "src/wikipedia.ts"
+        "src/wikipedia.ts",
+        "src/promise.d.ts"
     ]
 }
