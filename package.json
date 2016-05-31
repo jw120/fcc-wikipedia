@@ -3,11 +3,13 @@
   "version": "1.0.0",
   "description": "FreeCodeCamp Wikipedia viewer exercise",
   "main": "index.js",
-  "dependencies": {},
+  "dependencies": {
+  },
   "devDependencies": {
     "typescript": "next"
   },
   "scripts": {
+    "compile": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "JW",

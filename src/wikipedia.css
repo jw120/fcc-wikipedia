@@ -41,12 +41,13 @@ button {
     height: 2em;
 }
 
-.control-box form input {
+.control-box input {
     font-size: 12pt;
     width: 15em;
     height: 2em;
     border-color: darkslateblue;
-    visibility: hidden;
+    text-align: center;
+    visibility: hidden; /* this is changed in JS when we reveal the input */
 }
 
 .footer {

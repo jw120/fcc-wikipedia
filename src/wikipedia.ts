@@ -1,3 +1,12 @@
+// Fix CORS problem
+// TURN noImplictAny back on
+// Check errors are caught nicely all down the promise chain
+// TODO - Add non-FCC projects to portfolio?
+// Objectives - TypeScript instead of Ugly JS, Fetch instead of ugly XMLHttpRequest
+// Polyfill - fetch, promises?
+// Challenges - COR, Bundling/machinery
+// Notes - Wikipedia API does not support CORS, so need to use JSONP
+
 /*
  *
  * Global constants
@@ -5,7 +14,8 @@
  */
 
 // Used to build the URI for the Wikipedia API call
-const apiPrefix: string = "https://en.wikipedia.org/w/api.php?action=opensearch&namespace=0&format=json&search=";
+const apiPrefix: string = "http://en.wikipedia.org/w/api.php?action=opensearch&namespace=0&format=json&search=";
+const apiCallbackTag: string = "callback";
 
 /*
  *
@@ -24,7 +34,7 @@ run_when_document_ready(function () {
   // Handle input into the search field
   document.querySelector(".search-form").addEventListener("submit", function (event) {
     let input = document.getElementById("search-input") as HTMLInputElement;
-    search(input.value);
+    launchSearch(input.value);
     event.preventDefault();
   });
 });
@@ -36,6 +46,20 @@ run_when_document_ready(function () {
  *
  */
 
+// String containing the JSON stringify'd version of an object
+type JSONString = string;
+
+// Raw result of parsing the API Search Result as JSON
+type RawSearchResult = (string | string[])[];
+
+// Fully parsed searchResult
+interface SearchResult {
+  query: string;
+  titles: string[];
+  firstParas: string[];
+  urls: string[];
+}
+
 function openRandomPage(): void {
   console.log("Open random page")
 }
@@ -44,12 +68,144 @@ function startSearch(): void {
   let input = document.querySelector("#search-input") as HTMLFormElement;
   input.style.visibility = "visible";
   input.focus();
-  console.log("Starting search");
 }
 
-function search(s: string): void {
-  console.log("Search for ", s);
+function launchSearch(query: string): void {
+
+  console.log("launchSearch", query);
+
+  fetchJSONP(apiPrefix + query, apiCallbackTag)
+//    .then(checkStatus)
+//    .then(parseResult)
+    .then(r => r.json()) // Do we need then? <T>
+    .then(validateResult)
+    .then(updateSearchList)
+    .catch((e: Error) => console.log("fetch...catch", e.message));
+
+
+  // let request = new XMLHttpRequest();
+  // request.open("GET",  apiPrefix + query); // true is for async
+  // request.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
+  // request.onload = () => {
+  //   if (request.status >= 200 && request.status < 400) {
+  //     let apiReturn: string = request.response;
+  //     console.log("Response is", typeof apiReturn, apiReturn);
+  //       let result: SearchResult = parseResult(request.response);
+  //       if (result.err) {
+  //         console.log("API call parse returned with error", result.err);
+  //       } else {
+  //         updateSearchList(result);
+  //       }
+  //   } else {
+  //     console.log("Bad status from get", request);
+  //   }
+  // };
+  // request.onerror = function () {
+  //   console.log("Error from get");
+  // };
+  // request.send();
+
 }
+
+function updateSearchList(result: SearchResult): void {
+  console.log("updateSearchList", result);
+}
+
+/**
+ * Helper functions
+ */
+
+// Check that the response has a valid status
+function checkStatus(response: Response): Promise<Response> {
+  console.log("checkStatus", response);
+  if (response.status && response.status >=200 && response.status < 300) {
+    return Promise.resolve<Response>(response);
+  } else {
+    let msg = "Bad status code " + response.status +
+      ((response.statusText) ? " (" + response.statusText + ")" : "");
+    return Promise.reject<Response>(new Error(msg));
+  }
+}
+
+// // Parse the JSON string returned from the API into a raw object
+// // Adds a reasonable error message to the basic call
+// function parseResult(response: Response): RawSearchResult {
+//   response.json().catch((e) => {
+//     throw new Error("Parse Failed" + e);
+//   }
+// }
+
+// Validate that the raw result of the JSON parsing has the expected format, then convert to our
+// tidier search resut format
+function validateResult(raw: RawSearchResult): Promise<SearchResult> {
+  console.log("validateResult", raw);
+  if (Array.isArray(raw) &&
+      raw.length === 4 &&
+      typeof raw[0] == "string" &&
+      Array.isArray(raw[1]) &&
+      raw[1].every((x: string) => typeof x === "string")   &&
+      Array.isArray(raw[2]) &&
+      raw[2].every((x: string) => typeof x === "string")   &&
+      Array.isArray(raw[3]) &&
+      raw[3].every((x: string) => typeof x === "string")   &&
+      raw[1].length == raw[2].length &&
+      raw[2].length == raw[3].length) {
+        console.log("Validates OK");
+     return Promise.resolve<SearchResult>({
+       query: raw[0],
+       titles: raw[1],
+       firstParas: raw[2],
+       urls: raw[3]
+     });
+   } else {
+     return Promise.reject<SearchResult>(new Error("Invalid search result"));
+   }
+
+}
+
+
+
+// Standard function to run a function when document is loaded
+function run_when_document_ready(fn: () => void): void {
+  if (document.readyState !== "loading"){
+    fn();
+  } else {
+    document.addEventListener("DOMContentLoaded", fn);
+  }
+}
+
+interface JSONPResponse {
+  ok: boolean;
+  json(): Promise<any>;
+  json<T>(): Promise<T>;
+}
+
+// Adapted from https://github.com/camsong/fetch-jsonp
+function fetchJSONP(url: string, callbackTag: string): any {
+  return new Promise((resolve, reject) => {
+    let callbackName: string = `callback_jsonp_${Date.now()}_${Math.ceil(Math.random() * 100000)}`;
+
+    window[callbackName] = function (response) {
+      console.log("Response in callback is", response)
+      resolve({
+        ok: true,
+        json: () => Promise.resolve(response)
+      });
+
+      // Tidy up
+      const script = document.getElementById(callbackName);
+      document.getElementsByTagName("head")[0].removeChild(script);
+      delete window[callbackName];
+    };
+
+    const script = document.createElement("script");
+    script.setAttribute("src", url + "&" + callbackTag + "=" + callbackName);
+    script.id = callbackName;
+    document.getElementsByTagName("head")[0].appendChild(script);
+
+  });
+}
+
 
 
 /*
@@ -241,13 +397,5 @@ function writeTemp() {
 //   catch(e) {
 //     return false;
 //   }
-// }
+//
 
-// Standard function to run a function when document is loaded
-function run_when_document_ready(fn: () => void): void {
-  if (document.readyState !== "loading"){
-    fn();
-  } else {
-    document.addEventListener("DOMContentLoaded", fn);
-  }
-}
