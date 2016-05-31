@@ -3,13 +3,15 @@
   "version": "1.0.0",
   "description": "FreeCodeCamp Wikipedia viewer exercise",
   "main": "index.js",
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
+    "tslint": "^3.10.0-dev.3",
     "typescript": "next"
   },
   "scripts": {
     "compile": "tsc",
+    "lint": "tslint -c tslint.json src/*.ts",
+    "build": "cp src/index.html src/wikipedia.css src/wikipedia.js src/wikipedia.js.map dist/",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "JW",

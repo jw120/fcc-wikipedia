@@ -3,12 +3,11 @@
         "target": "es6",
         "module": "commonjs",
         "sourceMap": true,
-        "noImplicitAny": false,
+        "noImplicitAny": true,
         "noImplicitReturns": true,
         "strictNullChecks": true
     },
     "files": [
-        "src/wikipedia.ts",
-        "typings/tsd.d.ts"
+        "src/wikipedia.ts"
     ]
 }
