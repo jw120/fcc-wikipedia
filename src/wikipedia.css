@@ -35,6 +35,10 @@ button {
     height: 3em;
 }
 
+.result-anchor {
+    text-decoration: none;
+}
+
 .control-box button {
     font-size: 12pt;
     width: 13em;
@@ -48,6 +52,31 @@ button {
     border-color: darkslateblue;
     text-align: center;
     visibility: hidden; /* this is changed in JS when we reveal the input */
+}
+
+.results-box {
+    max-width: 40em;
+}
+
+.result-anchor {
+    text-decoration: none;
+}
+
+.result-box {
+    min-height: 6em;
+    margin-top: 1em;
+    padding-left: 15px;
+    padding-right: 15px;
+    padding-top: 1px;
+    padding-bottom: 1px;
+    background-color: lightblue;
+    color: black;
+}
+
+.result-box p {
+}
+
+.result-box h4 {
 }
 
 .footer {
