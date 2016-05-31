@@ -2,7 +2,11 @@
   "name": "wikipedia",
   "version": "1.0.0",
   "description": "FreeCodeCamp Wikipedia viewer exercise",
-  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "http://github.com/jw120/fcc-wikipedia.git"
+  },
+  "main": "index.html",
   "dependencies": {},
   "devDependencies": {
     "tslint": "^3.10.0-dev.3",

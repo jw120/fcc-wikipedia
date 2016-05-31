@@ -1,51 +1,3 @@
-// Polyfill - promises?
-// Alternative to adding console.log
-
-// Objectives - TypeScript instead of Ugly JS, Fetch instead of ugly XMLHttpRequest
-// Notes - Wikipedia API does not support CORS, so need to use JSONP
-// Comment that JSONP is an awful hack
-// Challenges - COR, Bundling/machinery
-
-
-// TODO - Add non-FCC projects to portfolio?
-
-
-/*
-const dummy: SearchResult = {
-  query: "zz",
-  titles: [
-    "Zz", "ZZ Top", "ZZ Top equipment", "ZZ Top discography", "ZZ Ward",
-    "ZZ diboson", "Zzyzx, California", "ZZ Gundam", "Zzoom", "ZZZap!"
-  ],
-  firstParas: [
-    "This is a redirect from a title with another method of capitalisation. It leads to the title in accordance with the Wikipedia naming conventions for capitalisation, or it leads to a title that is associated in some way with the conventional capitalisation of this redirect title.",
-    "ZZ Top /ˈziːziːtɒp/ is an American rock band that formed in 1969 in Houston, Texas. The band is composed of bassist and lead vocalist Dusty Hill, guitarist and lead vocalist Billy Gibbons (the band's leader, main lyricist and musical arranger), and drummer Frank Beard.",
-    "This is the musical equipment used by the members of the hard rock/blues rock band ZZ Top.",
-    "The following is a comprehensive discography of ZZ Top, an American blues rock band. Over the years they have released 15 studio albums, 3 live albums, 6 compilation albums, and 42 singles.",
-    "ZZ Ward (born Zsuzsanna Eva Ward, June 2, 1986) is an American musician, singer and songwriter. She is signed to Boardwalk Entertainment Group and Hollywood Records.",
-    "ZZ dibosons are rare pairs of Z bosons. They were first observed by the experiments at the Large Electron–Positron Collider (ALEPH, DELPHI, L3 and OPAL).",
-    "Zzyzx (/ˈzaɪzᵻks/ ZY-zəks), formerly Camp Soda and Soda Springs, is an unincorporated community in San Bernardino County, California, United States, within the boundaries of Mojave National Preserve.",
-    "The MSZ-010 ΖΖ Gundam (pronounced Double Zeta (ダブルゼータ, Daburu Zēta)), designed by Makoto Kobayashi, is a fictional weapon from the Universal Century timeline of the anime Gundam metaseries.",
-    "Zzoom is a computer game developed by John Gibson, Mark Butler and Steve Blower for the ZX Spectrum and released by Imagine Software in 1983. It is an early example of a combat flight simulator game, in which the player controls an aircraft that must protect refugees from enemy forces.",
-    "Zzzap (rendered ZZZap!) was a British children's television comedy programme. The concept of the show is a giant 18 ft comic that has been brought to life."
-
-  ],
-  urls:  [
-    "https://en.wikipedia.org/wiki/Zz",
-    "https://en.wikipedia.org/wiki/ZZ_Top",
-    "https://en.wikipedia.org/wiki/ZZ_Top_equipment",
-    "https://en.wikipedia.org/wiki/ZZ_Top_discography",
-    "https://en.wikipedia.org/wiki/ZZ_Ward",
-    "https://en.wikipedia.org/wiki/ZZ_diboson",
-    "https://en.wikipedia.org/wiki/Zzyzx,_California",
-    "https://en.wikipedia.org/wiki/ZZ_Gundam",
-    "https://en.wikipedia.org/wiki/Zzoom",
-    "https://en.wikipedia.org/wiki/ZZZap!"
-  ]
-};
-*/
-
-
 /*
  *
  * Global constants
@@ -68,10 +20,8 @@ const apiSuffix: string = "&callback="; // Name of the callback is added by fetc
  *
  */
 
-run_when_document_ready(function (): void {
 
-  // Button to open a random article
-  document.getElementById("random-button").addEventListener("click", openRandomPage);
+run_when_document_ready(function (): void {
 
   // Button to start a search
   document.getElementById("search-button").addEventListener("click", startSearch);
@@ -82,10 +32,6 @@ run_when_document_ready(function (): void {
     launchSearch(input.value);
     event.preventDefault();
   });
-
-  // For testing updateSearchList
-  // startSearch();
-  // updateSearchList(dummy);
 
 });
 
@@ -116,54 +62,57 @@ interface SearchResult {
  */
 
 
-function openRandomPage(): void {
-  console.log("Open random page");
-}
-
+// Starting a search means making the input field visible and putting cursor in it
 function startSearch(): void {
+
   let input: HTMLFormElement = document.querySelector("#search-input") as HTMLFormElement;
   input.style.visibility = "visible";
   input.focus();
+
 }
 
+// Launching a search uses a JSONP callback
 function launchSearch(query: string): void {
 
   jsonp<RawSearchResult>(apiPrefix + query + apiSuffix)
     .then(validateResult)
     .then(updateSearchList)
-    .catch((e: Error) => console.log("fetch...catch", e.message));
+    .catch((e: Error) => console.log(e));
 
 }
 
-
 // Update the search-results div in the DOM with the new search results
 function updateSearchList(result: SearchResult): void {
-  console.log("updateSearchList", result);
 
   const resultsBox: Element = document.querySelector(".results-box");
 
+  // Remove any old search results
   while (resultsBox.firstChild) {
     resultsBox.removeChild(resultsBox.firstChild);
   }
 
+  // Add each of the search results
   result.titles.forEach((title: string, i: number): void => {
 
+    // Each result contained in an anchor which links to the result's wikipedia page
     let newAnchor: Element = document.createElement("a");
     newAnchor.setAttribute("href", result.urls[i]);
     newAnchor.className = "result-anchor";
+    resultsBox.appendChild(newAnchor);
 
+    // Inside the anchor is a div for styling/spacing
     let newBox: Element = document.createElement("div");
     newBox.className = "result-box";
+    newAnchor.appendChild(newBox);
 
+    // Inside the div is, first, the title as a heading
     let newTitle: Element = document.createElement("h4");
     newTitle.appendChild(document.createTextNode(title));
+    newBox.appendChild(newTitle);
 
+    // Inside the div is, second, the first paragraph of the article
     let newBody: Element = document.createElement("p");
     newBody.appendChild(document.createTextNode(result.firstParas[i]));
-
-    resultsBox.appendChild(newAnchor);
-    newAnchor.appendChild(newBox);
-    newBox.appendChild(newTitle);
     newBox.appendChild(newBody);
 
   });
@@ -173,16 +122,17 @@ function updateSearchList(result: SearchResult): void {
 
 /**
  *
- * Helper functions
+ * Helper function
  *
  */
 
 
 // Validate that the raw result of the JSON parsing has the expected format, then convert to our
-// tidier search resut format
-function validateResult(raw: RawSearchResult): Promise<SearchResult> {
+// tidier search result type
+function validateResult(raw: RawSearchResult): SearchResult {
 
   if (Array.isArray(raw) &&
+
       raw.length === 4 &&
       typeof raw[0] === "string" &&
       Array.isArray(raw[1]) &&
@@ -194,17 +144,16 @@ function validateResult(raw: RawSearchResult): Promise<SearchResult> {
       raw[1].length === raw[2].length &&
       raw[2].length === raw[3].length) {
 
-    return Promise.resolve<SearchResult>({
+    return {
       query: raw[0],
       titles: raw[1],
       firstParas: raw[2],
       urls: raw[3]
-
-     });
+     };
 
    } else {
 
-     return Promise.reject<SearchResult>(new Error("Invalid search result"));
+     throw Error("Invalid search result");
 
   }
 
@@ -257,5 +206,3 @@ function jsonp<T>(url: string): Promise<T> {
 
   });
 }
-
-
